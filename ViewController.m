@@ -21,6 +21,7 @@
 @implementation ViewController
 #pragma mark - 快速创建单例
 WX_SINGLESHARE_M(ViewController)
+
 #pragma mark - lazy
 - (UITextField *) userNameFiled{
     if (!_userNameFiled) {
@@ -41,9 +42,50 @@ WX_SINGLESHARE_M(ViewController)
     return _signBtn;
 }
 
+
+
+#pragma mark - viewDidLoad
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    self.view.backgroundColor=[UIColor whiteColor];
+    
+    /*
+     *  一 . RAC 在登录界面的简单应用
+     */
+    [self textFildAndLogTest];
+    
+    /*
+     * 二. RAC对集合数组方面的使用
+     */
+    [self foundationTest];
+    
+    /*
+     * 三. RAC_代替KVC中的应用---实现许多监听事件
+     */
+    [self kvc];
+    
+    /*
+     * 四.RAC_小技巧
+     */
+    [self other];
+    
+    /*
+     * 五. RAC_代替代理
+     */
+    [self delegate];//用法一
+//    [self gotoshare];//用法二(跳转控制器中使用)
+    
+    
+    /*
+     * 六. RAC_代替通知(在ShareVC中发送通知,在这里接收)
+     */
+    [self notification];
+    
+}
+
 /*
  *测试登录账户用户名和密码框的输入,以及登录按钮的变化
-*/
+ */
 #pragma mark - 测试登录账户用户名和密码框的输入,以及登录按钮的变
 -(void)textFildAndLogTest{
     
@@ -67,13 +109,13 @@ WX_SINGLESHARE_M(ViewController)
          }
          return @([self isValidUsername:text]);
      }];
+    
     //第二个信号,用来绑定密码
     RACSignal *validPasswordSignal =
     [self.passwordFiled.rac_textSignal
      map:^id(NSString *text) {//返回一个信号
          return @([self isValidPassword:text]);
      }];
-    
     //监听用户名的背景颜色属性,对其进行修改
     RAC(self.userNameFiled, backgroundColor)=[validUsernameSignal map:^id(NSNumber *usernameValid) {
         return [usernameValid boolValue] ? [UIColor clearColor] : [UIColor redColor];
@@ -82,17 +124,16 @@ WX_SINGLESHARE_M(ViewController)
     RAC(self.passwordFiled, backgroundColor)=[validPasswordSignal map:^id(NSNumber *usernameValid) {
         return [usernameValid boolValue] ? [UIColor clearColor] : [UIColor redColor];
     }];
-    
     //监听密码输入长度,做一些逻辑处理
-   [self.passwordFiled.rac_textSignal subscribeNext:^(NSString *  x) {
-       if (x.length>5) {
-           [self.signBtn setTitle:@"一般" forState:UIControlStateNormal];
-       }else if (x.length>7){
-           [self.signBtn setTitle:@"真安全👍" forState:UIControlStateNormal];
-       }else if (x.length<5){
-           [self.signBtn setTitle:@"太危险" forState:UIControlStateNormal];
-       }
-   }];
+    [self.passwordFiled.rac_textSignal subscribeNext:^(NSString *  x) {
+        if (x.length>5) {
+            [self.signBtn setTitle:@"一般" forState:UIControlStateNormal];
+        }else if (x.length>7){
+            [self.signBtn setTitle:@"真安全👍" forState:UIControlStateNormal];
+        }else if (x.length<5){
+            [self.signBtn setTitle:@"太危险" forState:UIControlStateNormal];
+        }
+    }];
     
 }
 /*
@@ -201,7 +242,7 @@ WX_SINGLESHARE_M(ViewController)
     [tuple.rac_sequence.signal subscribeNext:^(id x) {
         //快速解析元组
         RACTupleUnpack(NSString * str,NSString * strValue,NSString * ni,NSString*h)=tuple;//(等号右边是要被解析的元组)
-
+        
         NSLog(@"%@:%@,%@,%@",str,strValue,ni,h);
     }];
 }
@@ -267,40 +308,18 @@ WX_SINGLESHARE_M(ViewController)
     }];
     
 }
-#pragma mark - viewDidLoad
-- (void)viewDidLoad {
-    [super viewDidLoad];
-    self.view.backgroundColor=[UIColor whiteColor];
+#pragma mark - RAC 代替通知NSNotification
+-(void)notification{
     
-    /*
-     *  一 . RAC 在登录界面的简单应用
-     */
-    [self textFildAndLogTest];
-    
-    /*
-     *二. RAC对集合数组方面的使用
-     */
-    [self foundationTest];
-    
-    /*
-     *三. RAC在KVC中的应用
-     */
-    [self kvc];
-    
-    /*
-     *四.RAC其他技巧
-     */
-    [self other];
-    
-    /*
-     *五. RAC在代理中的应用
-     */
-    [self delegate];//用法一
-//    [self gotoshare];//用法二
-    
-    
+    [[[NSNotificationCenter defaultCenter] rac_addObserverForName:@"RAC_notification" object:nil] subscribeNext:^(NSNotification* notificaton) {
+        //第一种接收方式
+        NSLog(@"%@",notificaton.object);
+        //第二种接收方式(知道传输的数据格式的前提下)
+        NSDictionary * dic=notificaton.object;
+        NSLog(@"%@",dic[@"name"]);
+    }];
 }
-
+#pragma mark - SETUI
 -(void)setUI{
     self.userNameFiled.layer.borderWidth=1;
     self.userNameFiled.placeholder=@"请输入用户名";
@@ -323,6 +342,7 @@ WX_SINGLESHARE_M(ViewController)
     [self.view addSubview:self.signBtn];
 
 }
+
 #pragma mark -  分享跳转控制器
 -(void)gotoshare{
     
@@ -332,7 +352,6 @@ WX_SINGLESHARE_M(ViewController)
     [vc.delegateSignal subscribeNext:^(id x) {
         NSLog(@"已经分享过了,哈哈");
     }];
-    
     [self.navigationController pushViewController:vc animated:YES];
 }
 #pragma mark - 判断用户名是否有效

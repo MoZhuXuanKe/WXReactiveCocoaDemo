@@ -34,18 +34,20 @@ Single_M(ShareVC)
     [self.btn addTarget:self action:@selector(shareBtnClick) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview: self.btn];
     
-    WXRedView * redView=[[WXRedView alloc]initWithFrame:CGRectMake(20, 64, kMainScreen_width, kMainScreen_height/2)];
-    self.view=redView;
+//    WXRedView * redView=[[WXRedView alloc]initWithFrame:CGRectMake(20, 64, kMainScreen_width, kMainScreen_height/2)];
+//    self.view=redView;
     
-    [[redView.btn rac_signalForControlEvents:UIControlEventTouchUpInside] subscribeNext:^(id x) {
-        NSLog(@"按钮上添加点击事件成功了");
-       }];
+//    [[redView.btn rac_signalForControlEvents:UIControlEventTouchUpInside] subscribeNext:^(id x) {
+//        NSLog(@"监听到了按钮的点击事件成功了");
+//       }];
 }
 -(void)shareBtnClick{
     
     if (self.delegateSignal) {
         NSLog(@"告诉第一个控制器,分享的控制器被点击了");
         [self.delegateSignal sendNext:@1];
+        //这里点击分享按钮的时候,发送一个通知,在第一个控制器中收听通知
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"RAC_notification" object:@{@"name":@"nike"}];
         
     }
     
