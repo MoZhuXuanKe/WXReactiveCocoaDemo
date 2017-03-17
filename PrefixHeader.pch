@@ -1,0 +1,49 @@
+//
+//  PrefixHeader.pch
+//  WXReactiveCocoaDemo
+//
+//  Created by WX on 16/11/28.
+//  Copyright © 2016年 WXmozhuxuanke. All rights reserved.
+//
+
+#ifndef PrefixHeader_pch
+#define PrefixHeader_pch
+
+#import <ReactiveCocoa.h>
+#import "UMSocial.h"                    // 友盟分享
+#import "UMSocialWechatHandler.h"       // 微信
+#import "UMSocialSinaSSOHandler.h"      // 微博
+#import "UMSocialQQHandler.h"           // QQ和QQ空间
+
+#define YM_Share_App_Key @"5734991fe0f55a060b001fe1"
+// 判断是否为空
+#define isNull(a)  ( (a==nil) || ((NSNull*)a==[NSNull null]) )
+#define isNotNull(a)  (!isNull(a))
+
+//屏幕宽度
+#define kMainTopHeight 64
+#define kMainBottomHeight 50
+#define kMainScreen_width [[UIScreen mainScreen] bounds].size.width
+#define kMainScreen_height [[UIScreen mainScreen] bounds].size.height
+
+//nslog
+#ifdef DEBUG
+#define NSLog(FORMAT, ...) fprintf(stderr,"%s:%d\t%s\n",[[[NSString stringWithUTF8String:__FILE__] lastPathComponent] UTF8String], __LINE__, [[NSString stringWithFormat:FORMAT, ##__VA_ARGS__] UTF8String]);
+#else
+#define NSLog(FORMAT, ...) nil
+#endif
+
+
+
+#define RAC(TARGET, ...) \
+metamacro_if_eq(1, metamacro_argcount(__VA_ARGS__)) \
+(RAC_(TARGET, __VA_ARGS__, nil)) \
+(RAC_(TARGET, __VA_ARGS__))
+
+/// Do not use this directly. Use the RAC macro above.
+#define RAC_(TARGET, KEYPATH, NILVALUE) \
+[[RACSubscriptingAssignmentTrampoline alloc] initWithTarget:(TARGET) nilValue:(NILVALUE)][@keypath(TARGET, KEYPATH)]
+// Include any system framework and library headers here that should be included in all compilation units.
+// You will also need to set the Prefix Header build setting of one or more of your targets to reference this file.
+
+#endif /* PrefixHeader_pch */
